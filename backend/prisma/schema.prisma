@@ -1,0 +1,117 @@
+// Schéma Prisma pour l'annuaire de services de mariage
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String        @id @default(cuid())
+  nom         String        @unique
+  description String?
+  icon        String?       // Icône pour l'affichage frontend
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  // Relations
+  prestataires Prestataire[]
+  
+  @@map("categories")
+}
+
+model Prestataire {
+  id          String   @id @default(cuid())
+  nom         String
+  description String
+  adresse     String?
+  ville       String
+  tel         String?
+  whatsapp    String?
+  instagram   String?
+  email       String?
+  site_web    String?
+  prix_moyen  Float?
+  note        Float?   @default(0)
+  nombre_avis Int?     @default(0)
+  images      Json?    // Array d'URLs d'images
+  services    Json?    // Array de services proposés
+  horaires    Json?    // Horaires d'ouverture
+  actif       Boolean  @default(true)
+  featured    Boolean  @default(false) // Prestataires mis en avant
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  userId     String?  @unique
+  user       User?    @relation(fields: [userId], references: [id])
+  messages   Message[]
+  avis       Avis[]
+  
+  @@map("prestataires")
+}
+
+model User {
+  id          String    @id @default(cuid())
+  nom         String
+  email       String    @unique
+  password    String
+  role        Role      @default(CLIENT)
+  tel         String?
+  actif       Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  prestataire Prestataire?
+  messages    Message[]
+  avis        Avis[]
+  
+  @@map("users")
+}
+
+model Message {
+  id            String      @id @default(cuid())
+  nom           String
+  email         String
+  tel           String?
+  message       String
+  date_event    DateTime?   // Date prévue de l'événement
+  budget        Float?
+  lu            Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  
+  // Relations
+  prestataireId String
+  prestataire   Prestataire @relation(fields: [prestataireId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id])
+  
+  @@map("messages")
+}
+
+model Avis {
+  id            String      @id @default(cuid())
+  note          Int         // Note sur 5
+  commentaire   String?
+  nom_client    String
+  createdAt     DateTime    @default(now())
+  
+  // Relations
+  prestataireId String
+  prestataire   Prestataire @relation(fields: [prestataireId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id])
+  
+  @@map("avis")
+}
+
+enum Role {
+  ADMIN
+  PRESTATAIRE
+  CLIENT
+}
