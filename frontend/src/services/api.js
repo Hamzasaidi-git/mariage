@@ -1,11 +1,9 @@
-// Service API pour communiquer avec le backend
 import axios from 'axios';
-import Cookies from 'js-cookie';
-import toast from 'react-hot-toast';
 
-// Configuration de base d'Axios
+// Configuration de base
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// Instance axios avec configuration
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -14,195 +12,234 @@ const api = axios.create({
   },
 });
 
-// Intercepteur pour ajouter le token d'authentification
+// Intercepteur pour ajouter le token
 api.interceptors.request.use(
   (config) => {
-    const token = Cookies.get('token');
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Intercepteur pour gérer les réponses et erreurs
+// Intercepteur pour gérer les erreurs
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expiré ou invalide
-      Cookies.remove('token');
-      Cookies.remove('user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
-    
-    // Afficher les erreurs si ce n'est pas une requête silencieuse
-    if (!error.config?.silent) {
-      const message = error.response?.data?.error || 'Une erreur est survenue';
-      toast.error(message);
-    }
-    
     return Promise.reject(error);
   }
 );
 
 // Services d'authentification
-export const authAPI = {
-  login: (credentials) => api.post('/auth/login', credentials),
-  register: (userData) => api.post('/auth/register', userData),
-  getProfile: () => api.get('/auth/me'),
-  updateProfile: (data) => api.put('/auth/profile', data),
-  changePassword: (data) => api.post('/auth/change-password', data),
-  getUsers: (params) => api.get('/auth/users', { params }),
+export const authService = {
+  login: async (credentials) => {
+    const response = await api.post('/auth/login', credentials);
+    return response.data;
+  },
+
+  register: async (userData) => {
+    const response = await api.post('/auth/register', userData);
+    return response.data;
+  },
+
+  logout: async () => {
+    const response = await api.post('/auth/logout');
+    return response.data;
+  },
+
+  getCurrentUser: async () => {
+    const response = await api.get('/auth/me');
+    return response.data;
+  },
 };
 
 // Services des prestataires
-export const prestatairesAPI = {
-  getAll: (params) => api.get('/prestataires', { params }),
-  getById: (id) => api.get(`/prestataires/${id}`),
-  create: (data) => api.post('/prestataires', data),
-  update: (id, data) => api.put(`/prestataires/${id}`, data),
-  delete: (id) => api.delete(`/prestataires/${id}`),
-  getFeatured: (params) => api.get('/prestataires/featured', { params }),
-  getVilles: () => api.get('/prestataires/villes'),
-  getSimilaires: (id, params) => api.get(`/prestataires/${id}/similaires`, { params }),
-  getAdminAll: (params) => api.get('/prestataires/admin/all', { params }),
+export const prestataireService = {
+  getAll: async (params = {}) => {
+    const response = await api.get('/prestataires', { params });
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await api.get(`/prestataires/${id}`);
+    return response.data;
+  },
+
+  create: async (data) => {
+    const response = await api.post('/prestataires', data);
+    return response.data;
+  },
+
+  update: async (id, data) => {
+    const response = await api.put(`/prestataires/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await api.delete(`/prestataires/${id}`);
+    return response.data;
+  },
+
+  search: async (query) => {
+    const response = await api.get(`/prestataires/search`, { params: query });
+    return response.data;
+  },
+
+  getByCategory: async (categoryId) => {
+    const response = await api.get(`/prestataires/category/${categoryId}`);
+    return response.data;
+  },
 };
 
 // Services des catégories
-export const categoriesAPI = {
-  getAll: () => api.get('/categories'),
-  getById: (id) => api.get(`/categories/${id}`),
-  create: (data) => api.post('/categories', data),
-  update: (id, data) => api.put(`/categories/${id}`, data),
-  delete: (id) => api.delete(`/categories/${id}`),
-  getPrestataires: (nom, params) => api.get(`/categories/${nom}/prestataires`, { params }),
-};
+export const categoryService = {
+  getAll: async () => {
+    const response = await api.get('/categories');
+    return response.data;
+  },
 
-// Services des messages
-export const messagesAPI = {
-  send: (data) => api.post('/messages', data),
-  getByPrestataire: (prestataireId, params) => api.get(`/messages/prestataire/${prestataireId}`, { params }),
-  getAdmin: (params) => api.get('/messages/admin', { params }),
-  getById: (id) => api.get(`/messages/${id}`),
-  markAsRead: (id) => api.put(`/messages/${id}/marquer-lu`),
-  markAsUnread: (id) => api.put(`/messages/${id}/marquer-non-lu`),
-  delete: (id) => api.delete(`/messages/${id}`),
-  getStats: () => api.get('/messages/stats/dashboard'),
+  getById: async (id) => {
+    const response = await api.get(`/categories/${id}`);
+    return response.data;
+  },
+
+  create: async (data) => {
+    const response = await api.post('/categories', data);
+    return response.data;
+  },
+
+  update: async (id, data) => {
+    const response = await api.put(`/categories/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await api.delete(`/categories/${id}`);
+    return response.data;
+  },
 };
 
 // Services des avis
-export const avisAPI = {
-  create: (data) => api.post('/avis', data),
-  getByPrestataire: (prestataireId, params) => api.get(`/avis/prestataire/${prestataireId}`, { params }),
-  getAdmin: (params) => api.get('/avis/admin', { params }),
-  getById: (id) => api.get(`/avis/${id}`),
-  update: (id, data) => api.put(`/avis/${id}`, data),
-  delete: (id) => api.delete(`/avis/${id}`),
-  getGlobalStats: () => api.get('/avis/stats/global'),
-  getPrestataireStats: (prestataireId) => api.get(`/avis/prestataire/${prestataireId}/stats`),
+export const avisService = {
+  getAll: async (params = {}) => {
+    const response = await api.get('/avis', { params });
+    return response.data;
+  },
+
+  getByPrestataire: async (prestataireId) => {
+    const response = await api.get(`/avis/prestataire/${prestataireId}`);
+    return response.data;
+  },
+
+  create: async (data) => {
+    const response = await api.post('/avis', data);
+    return response.data;
+  },
+
+  update: async (id, data) => {
+    const response = await api.put(`/avis/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await api.delete(`/avis/${id}`);
+    return response.data;
+  },
+
+  approve: async (id) => {
+    const response = await api.patch(`/avis/${id}/approve`);
+    return response.data;
+  },
+
+  reject: async (id) => {
+    const response = await api.patch(`/avis/${id}/reject`);
+    return response.data;
+  },
+};
+
+// Services des messages
+export const messageService = {
+  getAll: async () => {
+    const response = await api.get('/messages');
+    return response.data;
+  },
+
+  getByConversation: async (prestataireId) => {
+    const response = await api.get(`/messages/conversation/${prestataireId}`);
+    return response.data;
+  },
+
+  send: async (data) => {
+    const response = await api.post('/messages', data);
+    return response.data;
+  },
+
+  markAsRead: async (id) => {
+    const response = await api.patch(`/messages/${id}/read`);
+    return response.data;
+  },
 };
 
 // Services d'upload
-export const uploadAPI = {
-  single: (file) => {
+export const uploadService = {
+  uploadImage: async (file, folder = 'general') => {
     const formData = new FormData();
     formData.append('image', file);
-    return api.post('/upload/single', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    formData.append('folder', folder);
+
+    const response = await api.post('/upload/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
+    return response.data;
   },
-  multiple: (files) => {
+
+  uploadMultiple: async (files, folder = 'general') => {
     const formData = new FormData();
-    files.forEach(file => formData.append('images', file));
-    return api.post('/upload/multiple', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    files.forEach(file => {
+      formData.append('images', file);
     });
+    formData.append('folder', folder);
+
+    const response = await api.post('/upload/multiple', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
   },
-  delete: (filename) => api.delete(`/upload/${filename}`),
-  list: () => api.get('/upload/list'),
-  getInfo: (filename) => api.get(`/upload/info/${filename}`),
+
+  deleteImage: async (filename) => {
+    const response = await api.delete(`/upload/image/${filename}`);
+    return response.data;
+  },
 };
 
-// Service de recherche générale
-export const searchAPI = {
-  global: (query, params) => api.get('/prestataires', { 
-    params: { search: query, ...params } 
-  }),
-  suggestions: (query) => api.get('/prestataires', { 
-    params: { search: query, limit: 5 },
-    silent: true // Ne pas afficher les erreurs
-  }),
+// Services statistiques (pour admin)
+export const statsService = {
+  getDashboard: async () => {
+    const response = await api.get('/admin/stats/dashboard');
+    return response.data;
+  },
+
+  getPrestataires: async () => {
+    const response = await api.get('/admin/stats/prestataires');
+    return response.data;
+  },
+
+  getUsers: async () => {
+    const response = await api.get('/admin/stats/users');
+    return response.data;
+  },
 };
 
-// Service de géolocalisation et cartes
-export const locationAPI = {
-  getVilles: () => prestatairesAPI.getVilles(),
-  searchByLocation: (location, params) => api.get('/prestataires', {
-    params: { ville: location, ...params }
-  }),
-};
-
-// Service de statistiques globales
-export const statsAPI = {
-  getDashboard: () => api.get('/messages/stats/dashboard'),
-  getGlobalAvis: () => avisAPI.getGlobalStats(),
-  getHealth: () => api.get('/health'),
-};
-
-// Helpers pour la gestion des erreurs
-export const handleApiError = (error) => {
-  if (error.response) {
-    // Erreur de réponse du serveur
-    return {
-      message: error.response.data?.error || 'Erreur du serveur',
-      status: error.response.status,
-      data: error.response.data
-    };
-  } else if (error.request) {
-    // Pas de réponse du serveur
-    return {
-      message: 'Impossible de contacter le serveur',
-      status: 0,
-      data: null
-    };
-  } else {
-    // Erreur de configuration
-    return {
-      message: error.message || 'Erreur inconnue',
-      status: -1,
-      data: null
-    };
-  }
-};
-
-// Helper pour les requêtes avec cache personnalisé
-export const createCachedRequest = (requestFn, cacheKey, ttl = 5 * 60 * 1000) => {
-  const cache = new Map();
-  
-  return async (...args) => {
-    const key = `${cacheKey}-${JSON.stringify(args)}`;
-    const cached = cache.get(key);
-    
-    if (cached && Date.now() - cached.timestamp < ttl) {
-      return cached.data;
-    }
-    
-    try {
-      const response = await requestFn(...args);
-      cache.set(key, {
-        data: response,
-        timestamp: Date.now()
-      });
-      return response;
-    } catch (error) {
-      cache.delete(key);
-      throw error;
-    }
-  };
-};
-
+// Export par défaut
 export default api;
