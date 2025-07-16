@@ -27,7 +27,7 @@ Un annuaire complet des services de mariage en Tunisie développé avec React, N
 
 - **Frontend**: React 18, Tailwind CSS, React Router, React Query
 - **Backend**: Node.js, Express, Prisma ORM
-- **Base de données**: PostgreSQL
+- **Base de données**: MySQL (compatible XAMPP)
 - **Authentification**: JWT
 - **Upload**: Multer (stockage local)
 - **Icons**: React Icons
@@ -37,7 +37,7 @@ Un annuaire complet des services de mariage en Tunisie développé avec React, N
 Avant de commencer, assurez-vous d'avoir installé :
 
 - [Node.js](https://nodejs.org/) (version 16 ou supérieure)
-- [PostgreSQL](https://www.postgresql.org/) (version 12 ou supérieure)
+- [XAMPP](https://www.apachefriends.org/) (avec MySQL activé) ou MySQL standalone
 - [npm](https://www.npmjs.com/) ou [yarn](https://yarnpkg.com/)
 
 ## 🚀 Installation
@@ -49,35 +49,39 @@ git clone <votre-repo>
 cd wedding-directory
 ```
 
-### 2. Configuration de la base de données PostgreSQL
+### 2. Configuration de la base de données MySQL
 
-#### Option A: Installation locale de PostgreSQL
+#### Option A: Utilisation de XAMPP (Recommandée)
 
-1. Installez PostgreSQL selon votre OS
-2. Créez une base de données :
+1. Téléchargez et installez [XAMPP](https://www.apachefriends.org/)
+2. Démarrez XAMPP et activez **Apache** et **MySQL**
+3. Ouvrez phpMyAdmin (http://localhost/phpmyadmin)
+4. Créez une nouvelle base de données nommée `wedding_directory`
+
+#### Option B: MySQL standalone
 
 ```sql
--- Connectez-vous à PostgreSQL
-psql -U postgres
+-- Connectez-vous à MySQL
+mysql -u root -p
 
 -- Créez la base de données
-CREATE DATABASE wedding_directory;
+CREATE DATABASE wedding_directory CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Créez un utilisateur (optionnel)
-CREATE USER wedding_user WITH PASSWORD 'votre_mot_de_passe';
-GRANT ALL PRIVILEGES ON DATABASE wedding_directory TO wedding_user;
+CREATE USER 'wedding_user'@'localhost' IDENTIFIED BY 'votre_mot_de_passe';
+GRANT ALL PRIVILEGES ON wedding_directory.* TO 'wedding_user'@'localhost';
+FLUSH PRIVILEGES;
 ```
 
-#### Option B: Utilisation de Docker
+#### Option C: Utilisation de Docker
 
 ```bash
-# Démarrer PostgreSQL avec Docker
-docker run --name wedding-postgres \
-  -e POSTGRES_DB=wedding_directory \
-  -e POSTGRES_USER=wedding_user \
-  -e POSTGRES_PASSWORD=votre_mot_de_passe \
-  -p 5432:5432 \
-  -d postgres:15
+# Démarrer MySQL avec Docker
+docker run --name wedding-mysql \
+  -e MYSQL_ROOT_PASSWORD=root \
+  -e MYSQL_DATABASE=wedding_directory \
+  -p 3306:3306 \
+  -d mysql:8.0
 ```
 
 ### 3. Configuration du Backend
@@ -96,8 +100,11 @@ cp .env.example .env
 Modifiez le fichier `.env` avec vos paramètres :
 
 ```env
-# Base de données
-DATABASE_URL="postgresql://wedding_user:votre_mot_de_passe@localhost:5432/wedding_directory?schema=public"
+# Base de données MySQL (XAMPP par défaut)
+DATABASE_URL="mysql://root:@localhost:3306/wedding_directory"
+
+# Ou avec utilisateur personnalisé :
+# DATABASE_URL="mysql://wedding_user:votre_mot_de_passe@localhost:3306/wedding_directory"
 
 # JWT
 JWT_SECRET="votre_secret_jwt_tres_securise_ici_changez_le"
@@ -311,9 +318,10 @@ L'application est entièrement responsive avec Tailwind CSS :
 
 ### Erreur de connexion à la base de données
 
-1. Vérifiez que PostgreSQL est démarré
+1. Vérifiez que XAMPP est démarré et MySQL est actif (voyant vert)
 2. Vérifiez l'URL de connexion dans `.env`
-3. Testez la connexion : `psql -d wedding_directory -U wedding_user`
+3. Testez la connexion : `mysql -u root -p wedding_directory`
+4. Si vous utilisez XAMPP, le mot de passe root est généralement vide
 
 ### Erreur de CORS
 

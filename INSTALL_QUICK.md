@@ -15,7 +15,7 @@ cd wedding-directory
 
 ### 1. Prérequis
 - Node.js 16+ installé
-- PostgreSQL installé et en cours d'exécution
+- XAMPP installé avec MySQL activé (ou MySQL standalone)
 - Git installé
 
 ### 2. Installation Backend
@@ -29,8 +29,12 @@ cp .env.example .env
 
 ### 3. Configuration Base de Données
 
+1. Démarrez XAMPP et activez MySQL
+2. Ouvrez phpMyAdmin (http://localhost/phpmyadmin)
+3. Créez une base nommée `wedding_directory`
+
 ```bash
-# Créer la base de données
+# Créer les tables
 npx prisma db push
 
 # Peupler avec des données d'exemple
@@ -77,10 +81,11 @@ npm run dev
 ## Problèmes courants
 
 ### Base de données
-Si erreur de connexion PostgreSQL:
-1. Vérifiez que PostgreSQL est démarré
-2. Modifiez DATABASE_URL dans backend/.env
-3. Créez la base avec `npx prisma db push`
+Si erreur de connexion MySQL:
+1. Vérifiez que XAMPP est démarré et MySQL est activé (voyant vert)
+2. Vérifiez que la base `wedding_directory` existe dans phpMyAdmin
+3. Modifiez DATABASE_URL dans backend/.env si nécessaire
+4. Créez les tables avec `npx prisma db push`
 
 ### CORS
 Si erreur CORS:

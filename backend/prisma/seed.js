@@ -1,8 +1,12 @@
 // Script de peuplement de la base de données
 const { PrismaClient } = require('@prisma/client');
 const { hashPassword } = require('../src/utils/auth');
+const crypto = require('crypto');
 
 const prisma = new PrismaClient();
+
+// Fonction helper pour générer des UUIDs
+const generateId = () => crypto.randomUUID();
 
 const villesTunisiennes = [
   'Tunis', 'Sfax', 'Sousse', 'Ettadhamen', 'Kairouan', 'Bizerte', 'Gabès', 

@@ -12,10 +12,11 @@ if ! command -v node &> /dev/null; then
     exit 1
 fi
 
-# Vérifier que PostgreSQL est accessible
-if ! command -v psql &> /dev/null; then
-    echo "⚠️  PostgreSQL n'est pas détecté. Assurez-vous qu'il soit installé et accessible."
-    echo "   Vous pouvez continuer si vous utilisez Docker ou une base cloud."
+# Vérifier que MySQL est accessible
+if ! command -v mysql &> /dev/null; then
+    echo "⚠️  MySQL n'est pas détecté. Assurez-vous qu'il soit installé et accessible."
+    echo "   Si vous utilisez XAMPP, assurez-vous qu'il soit démarré avec MySQL activé."
+    echo "   Vous pouvez aussi utiliser Docker ou une base cloud."
 fi
 
 echo "📦 Installation des dépendances du backend..."
@@ -58,11 +59,13 @@ echo ""
 echo "🎉 Installation terminée !"
 echo ""
 echo "📋 Prochaines étapes :"
-echo "1. Configurez PostgreSQL et modifiez backend/.env"
-echo "2. Exécutez 'cd backend && npx prisma db push' pour créer la base"
-echo "3. Exécutez 'cd backend && npm run db:seed' pour peupler la base"
-echo "4. Démarrez le backend: 'cd backend && npm run dev'"
-echo "5. Démarrez le frontend: 'cd frontend && npm run dev'"
+echo "1. Démarrez XAMPP et activez MySQL"
+echo "2. Créez la base 'wedding_directory' dans phpMyAdmin"
+echo "3. Modifiez backend/.env si nécessaire"
+echo "4. Exécutez 'cd backend && npx prisma db push' pour créer les tables"
+echo "5. Exécutez 'cd backend && npm run db:seed' pour peupler la base"
+echo "6. Démarrez le backend: 'cd backend && npm run dev'"
+echo "7. Démarrez le frontend: 'cd frontend && npm run dev'"
 echo ""
 echo "📖 Consultez le README.md pour plus d'informations"
 echo ""

@@ -4,15 +4,15 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model Category {
-  id          String        @id @default(cuid())
-  nom         String        @unique
-  description String?
-  icon        String?       // Icône pour l'affichage frontend
+  id          String        @id @default(uuid())
+  nom         String        @unique @db.VarChar(100)
+  description String?       @db.Text
+  icon        String?       @db.VarChar(50)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   
@@ -23,16 +23,16 @@ model Category {
 }
 
 model Prestataire {
-  id          String   @id @default(cuid())
-  nom         String
-  description String
-  adresse     String?
-  ville       String
-  tel         String?
-  whatsapp    String?
-  instagram   String?
-  email       String?
-  site_web    String?
+  id          String   @id @default(uuid())
+  nom         String   @db.VarChar(150)
+  description String   @db.Text
+  adresse     String?  @db.VarChar(255)
+  ville       String   @db.VarChar(100)
+  tel         String?  @db.VarChar(20)
+  whatsapp    String?  @db.VarChar(20)
+  instagram   String?  @db.VarChar(100)
+  email       String?  @db.VarChar(150)
+  site_web    String?  @db.VarChar(255)
   prix_moyen  Float?
   note        Float?   @default(0)
   nombre_avis Int?     @default(0)
@@ -56,12 +56,12 @@ model Prestataire {
 }
 
 model User {
-  id          String    @id @default(cuid())
-  nom         String
-  email       String    @unique
-  password    String
+  id          String    @id @default(uuid())
+  nom         String    @db.VarChar(100)
+  email       String    @unique @db.VarChar(150)
+  password    String    @db.VarChar(255)
   role        Role      @default(CLIENT)
-  tel         String?
+  tel         String?   @db.VarChar(20)
   actif       Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -75,11 +75,11 @@ model User {
 }
 
 model Message {
-  id            String      @id @default(cuid())
-  nom           String
-  email         String
-  tel           String?
-  message       String
+  id            String      @id @default(uuid())
+  nom           String      @db.VarChar(100)
+  email         String      @db.VarChar(150)
+  tel           String?     @db.VarChar(20)
+  message       String      @db.Text
   date_event    DateTime?   // Date prévue de l'événement
   budget        Float?
   lu            Boolean     @default(false)
@@ -95,10 +95,10 @@ model Message {
 }
 
 model Avis {
-  id            String      @id @default(cuid())
+  id            String      @id @default(uuid())
   note          Int         // Note sur 5
-  commentaire   String?
-  nom_client    String
+  commentaire   String?     @db.Text
+  nom_client    String      @db.VarChar(100)
   createdAt     DateTime    @default(now())
   
   // Relations
